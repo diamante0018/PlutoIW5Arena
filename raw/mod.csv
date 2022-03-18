@@ -1,0 +1,14 @@
+# Add gamemode
+rawfile,maps/mp/gametypes/_gametypes.txt
+
+# Gamemode script
+rawfile,maps/mp/gametypes/arena.gsc
+
+rawfile,mp/recipes/arena.recipe
+
+rawfile,mp/basemaps.arena
+
+rawfile,maps/mp/gametypes/arena.txt
+
+# Loc
+localize,PRESENCE_ARENA
