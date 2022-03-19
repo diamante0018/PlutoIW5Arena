@@ -10,6 +10,7 @@ oic
 grnd
 tdef
 arena
+gtnw
 conf
 infect
 jugg

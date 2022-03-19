@@ -1,14 +1,24 @@
 # Add gamemode
 rawfile,maps/mp/gametypes/_gametypes.txt
 
-# Gamemode script
+# Gamemode scripts
 rawfile,maps/mp/gametypes/arena.gsc
+rawfile,maps/mp/gametypes/gtnw.gsc
 
+# Copied from war.recipe
 rawfile,mp/recipes/arena.recipe
+rawfile,mp/recipes/gtnw.recipe
 
 rawfile,mp/basemaps.arena
 
+# UI Loc strings
 rawfile,maps/mp/gametypes/arena.txt
+rawfile,maps/mp/gametypes/gtnw.txt
 
 # Loc
 localize,PRESENCE_ARENA
+localize,PRESENCE_GTNW
+localize,MPUI_GTNW_RECIPE_NAME
+localize,MPUI_GTNW_RECIPE_DESC
+localize,MPUI_GTNW
+localize,OBJECTIVES_GTNW
