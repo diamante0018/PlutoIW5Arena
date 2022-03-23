@@ -1,5 +1,6 @@
 // IW5 GSC SOURCE
 // Decompiled by https://github.com/xensik/gsc-tool
+// Rewritten by ReaaLx
 
 main()
 {
@@ -58,10 +59,10 @@ onStartGameType()
 
 	if ( game["switchedsides"] )
 	{
-		var_0 = game["attackers"];
-		var_1 = game["defenders"];
-		game["attackers"] = var_1;
-		game["defenders"] = var_0;
+		oldAttackers = game["attackers"];
+		oldDefenders = game["defenders"];
+		game["attackers"] = oldDefenders;
+		game["defenders"] = oldAttackers;
 	}
 
 	maps\mp\_utility::setObjectiveText( "allies", &"OBJECTIVES_ARENA" );
@@ -88,11 +89,11 @@ onStartGameType()
 	maps\mp\gametypes\_spawnlogic::addSpawnPoints( "axis", "mp_tdm_spawn" );
 	level.mapCenter = maps\mp\gametypes\_spawnlogic::findBoxCenter( level.spawnMins, level.spawnMaxs );
 	setmapcenter( level.mapCenter );
-	var_2[0] = "dom";
-	var_2[1] = "airdrop_pallet";
-	var_2[2] = "arena";
+	allowed[0] = "dom";
+	allowed[1] = "airdrop_pallet";
+	allowed[2] = "arena";
 	maps\mp\gametypes\_rank::registerScoreInfo( "capture", 200 );
-	maps\mp\gametypes\_gameobjects::main( var_2 );
+	maps\mp\gametypes\_gameobjects::main( allowed );
 	precacheFlag();
 	thread arenaFlagWaiter();
 	thread arenaTimeFlagWaiter();
@@ -124,9 +125,9 @@ arenaTimeFlagWaiter()
 
 	for ( ;; )
 	{
-		var_0 = maps\mp\gametypes\_gamelogic::getTimeRemaining();
+		timeLeft = maps\mp\gametypes\_gamelogic::getTimeRemaining();
 
-		if ( var_0 < 61000 )
+		if ( timeLeft < 61000 )
 			break;
 
 		wait 1;
@@ -171,23 +172,23 @@ arenaFlagWaiter()
 
 getSpawnPoint()
 {
-	var_0 = self.pers["team"];
+	spawnteam = self.pers["team"];
 
 	if ( game["switchedsides"] )
-		var_0 = maps\mp\_utility::getOtherTeam( var_0 );
+		spawnteam = maps\mp\_utility::getOtherTeam( spawnteam );
 
 	if ( level.inGracePeriod )
 	{
-		var_1 = maps\mp\gametypes\_spawnlogic::getSpawnpointArray( "mp_tdm_spawn_" + var_0 + "_start" );
-		var_2 = maps\mp\gametypes\_spawnlogic::getSpawnpoint_Random( var_1 );
+		spawnPoints = maps\mp\gametypes\_spawnlogic::getSpawnpointArray( "mp_tdm_spawn_" + spawnteam + "_start" );
+		spawnPoint = maps\mp\gametypes\_spawnlogic::getSpawnpoint_Random( spawnPoints );
 	}
 	else
 	{
-		var_1 = maps\mp\gametypes\_spawnlogic::getTeamSpawnPoints( var_0 );
-		var_2 = maps\mp\gametypes\_spawnlogic::getSpawnpoint_NearTeam( var_1 );
+		spawnPoints = maps\mp\gametypes\_spawnlogic::getTeamSpawnPoints( spawnteam );
+		spawnPoint = maps\mp\gametypes\_spawnlogic::getSpawnpoint_NearTeam( spawnPoints );
 	}
 
-	return var_2;
+	return spawnPoint;
 }
 
 onSpawnPlayer()
@@ -196,17 +197,17 @@ onSpawnPlayer()
 	level notify( "spawned_player" );
 }
 
-onNormalDeath( var_0, var_1, var_2 )
+onNormalDeath( victim, attacker, lifeId )
 {
-	var_3 = maps\mp\gametypes\_rank::getScoreInfoValue( "kill" );
-	var_1 maps\mp\gametypes\_gamescore::giveTeamScoreForObjective( var_1.pers["team"], var_3 );
-	var_4 = var_0.team;
+	score = maps\mp\gametypes\_rank::getScoreInfoValue( "kill" );
+	attacker maps\mp\gametypes\_gamescore::giveTeamScoreForObjective( attacker.pers["team"], score );
+	team = victim.team;
 
 	if ( game["state"] == "postgame" )
-		var_1.finalKill = 1;
+		attacker.finalKill = 1;
 }
 
-onPlayerKilled( var_0, var_1, var_2, var_3, var_4, var_5, var_6, var_7, var_8, var_9 )
+onPlayerKilled( eInflictor, attacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration, killId )
 {
 	thread checkAllowSpectating();
 }
@@ -214,35 +215,35 @@ onPlayerKilled( var_0, var_1, var_2, var_3, var_4, var_5, var_6, var_7, var_8, v
 onTimeLimit()
 {
 	if ( game["status"] == "overtime" )
-		var_0 = "forfeit";
+		winner = "forfeit";
 	else if ( game["teamScores"]["allies"] == game["teamScores"]["axis"] )
-		var_0 = "overtime";
+		winner = "overtime";
 	else if ( game["teamScores"]["axis"] > game["teamScores"]["allies"] )
-		var_0 = "axis";
+		winner = "axis";
 	else
-		var_0 = "allies";
+		winner = "allies";
 
-	thread maps\mp\gametypes\_gamelogic::endGame( var_0, game["strings"]["time_limit_reached"] );
+	thread maps\mp\gametypes\_gamelogic::endGame( winner, game["strings"]["time_limit_reached"] );
 }
 
 checkAllowSpectating()
 {
 	wait 0.05;
-	var_0 = 0;
+	update = 0;
 
 	if ( !level.aliveCount[game["attackers"]] )
 	{
 		level.spectateOverride[game["attackers"]].allowEnemySpectate = 1;
-		var_0 = 1;
+		update = 1;
 	}
 
 	if ( !level.aliveCount[game["defenders"]] )
 	{
 		level.spectateOverride[game["defenders"]].allowEnemySpectate = 1;
-		var_0 = 1;
+		update = 1;
 	}
 
-	if ( var_0 )
+	if ( update )
 		maps\mp\gametypes\_spectating::updateSpectateSettings();
 }
 
@@ -250,149 +251,150 @@ arenaFlag()
 {
 	level.lastStatus["allies"] = 0;
 	level.lastStatus["axis"] = 0;
-	var_0 = getentarray( "flag_arena", "targetname" );
-	var_1 = getentarray( "flag_primary", "targetname" );
-	var_2 = getentarray( "flag_secondary", "targetname" );
+	arenaFlag = getentarray( "flag_arena", "targetname" );
+	primaryFlags = getentarray( "flag_primary", "targetname" );
+	secondaryFlags = getentarray( "flag_secondary", "targetname" );
 
-	if ( !isdefined( var_0[0] ) )
+	if ( !isdefined( arenaFlag[0] ) )
 	{
-		if ( var_1.size + var_2.size < 1 )
+		if ( primaryFlags.size + secondaryFlags.size < 1 )
 		{
 			maps\mp\gametypes\_callbacksetup::AbortLevel();
 			return;
 		}
 
-		setupDomFlag( var_1, var_2 );
+		setupDomFlag( primaryFlags, secondaryFlags );
 	}
 	else
-		level.arenaFlag = var_0[0];
+		level.arenaFlag = arenaFlag[0];
 
-	var_3 = level.arenaFlag;
+	trigger = level.arenaFlag;
 
-	if ( isdefined( var_3.target ) )
-		var_4[0] = getent( var_3.target, "targetname" );
+	if ( isdefined( trigger.target ) )
+		visuals[0] = getent( trigger.target, "targetname" );
 	else
 	{
-		var_4[0] = spawn( "script_model", var_3.origin );
-		var_4[0].angles = var_3.angles;
+		visuals[0] = spawn( "script_model", trigger.origin );
+		visuals[0].angles = trigger.angles;
 	}
 
-	var_4[0] setmodel( game["flagmodels"]["neutral"] );
-	var_0 = maps\mp\gametypes\_gameobjects::createUseObject( "neutral", var_3, var_4, ( 0, 0, 100 ) );
-	var_0 maps\mp\gametypes\_gameobjects::allowUse( "enemy" );
-	var_0 maps\mp\gametypes\_gameobjects::setUseTime( 20.0 );
-	var_0 maps\mp\gametypes\_gameobjects::setUseText( &"MP_CAPTURING_FLAG" );
-	var_5 = var_0 maps\mp\gametypes\_gameobjects::getLabel();
-	var_0.label = var_5;
-	var_0 maps\mp\gametypes\_gameobjects::set2DIcon( "friendly", "compass_waypoint_defend" );
-	var_0 maps\mp\gametypes\_gameobjects::set3DIcon( "friendly", "waypoint_defend" );
-	var_0 maps\mp\gametypes\_gameobjects::set2DIcon( "enemy", "compass_waypoint_captureneutral" );
-	var_0 maps\mp\gametypes\_gameobjects::set3DIcon( "enemy", "waypoint_captureneutral" );
-	var_0 maps\mp\gametypes\_gameobjects::setVisibleTeam( "any" );
-	var_0.onUse = ::onUse;
-	var_0.onBeginUse = ::onBeginUse;
-	var_0.onUseUpdate = ::onUseUpdate;
-	var_0.onEndUse = ::onEndUse;
-	var_0.isArena = 1;
+	visuals[0] setmodel( game["flagmodels"]["neutral"] );
+
+	arenaFlag = maps\mp\gametypes\_gameobjects::createUseObject( "neutral", trigger, visuals, ( 0, 0, 100 ) );
+	arenaFlag maps\mp\gametypes\_gameobjects::allowUse( "enemy" );
+	arenaFlag maps\mp\gametypes\_gameobjects::setUseTime( 20.0 );
+	arenaFlag maps\mp\gametypes\_gameobjects::setUseText( &"MP_CAPTURING_FLAG" );
+	label = arenaFlag maps\mp\gametypes\_gameobjects::getLabel();
+	arenaFlag.label = label;
+	arenaFlag maps\mp\gametypes\_gameobjects::set2DIcon( "friendly", "compass_waypoint_defend" );
+	arenaFlag maps\mp\gametypes\_gameobjects::set3DIcon( "friendly", "waypoint_defend" );
+	arenaFlag maps\mp\gametypes\_gameobjects::set2DIcon( "enemy", "compass_waypoint_captureneutral" );
+	arenaFlag maps\mp\gametypes\_gameobjects::set3DIcon( "enemy", "waypoint_captureneutral" );
+	arenaFlag maps\mp\gametypes\_gameobjects::setVisibleTeam( "any" );
+	arenaFlag.onUse = ::onUse;
+	arenaFlag.onBeginUse = ::onBeginUse;
+	arenaFlag.onUseUpdate = ::onUseUpdate;
+	arenaFlag.onEndUse = ::onEndUse;
+	arenaFlag.isArena = 1;
 	iprintlnbold( "Arena flag spawned" );
 	level.arenaFlag playsound( "flag_spawned" );
-	var_6 = var_4[0].origin + ( 0, 0, 32 );
-	var_7 = var_4[0].origin + ( 0, 0, -32 );
-	var_8 = bullettrace( var_6, var_7, 0, undefined );
-	var_9 = vectortoangles( var_8["normal"] );
-	var_0.baseeffectforward = anglestoforward( var_9 );
-	var_0.baseeffectright = anglestoright( var_9 );
-	var_0.baseeffectpos = var_8["position"];
-	var_0.levelFlag = level.arenaFlag;
-	level.arenaFlag = var_0;
+	traceStart = visuals[0].origin + ( 0, 0, 32 );
+	traceEnd = visuals[0].origin + ( 0, 0, -32 );
+	trace = bullettrace( traceStart, traceEnd, 0, undefined );
+	upangles = vectortoangles( trace["normal"] );
+	arenaFlag.baseeffectforward = anglestoforward( upangles );
+	arenaFlag.baseeffectright = anglestoright( upangles );
+	arenaFlag.baseeffectpos = trace["position"];
+	arenaFlag.levelFlag = level.arenaFlag;
+	level.arenaFlag = arenaFlag;
 }
 
-setupDomFlag( var_0, var_1 )
+setupDomFlag( primaryFlags, secondaryFlags )
 {
-	for ( var_2 = 0; var_2 < var_0.size; var_2++ )
+	for ( index = 0; index < index.size; index++ )
 	{
-		var_3 = var_0[var_2].script_label;
+		label = primaryFlags[index].script_label;
 
-		if ( var_3 != "_b" )
+		if ( label != "_b" )
 		{
-			var_0[var_2] delete();
+			primaryFlags[index] delete();
 			continue;
 		}
 
-		level.arenaFlag = var_0[var_2];
+		level.arenaFlag = primaryFlags[index];
 		return;
 	}
 }
 
-onDeadEvent( var_0 )
+onDeadEvent( team )
 {
-	if ( var_0 == game["attackers"] )
+	if ( team == game["attackers"] )
 		level thread arena_endGame( game["defenders"], game["strings"][game["attackers"] + "_eliminated"] );
-	else if ( var_0 == game["defenders"] )
+	else if ( team == game["defenders"] )
 		level thread arena_endGame( game["attackers"], game["strings"][game["defenders"] + "_eliminated"] );
 }
 
-arena_endGame( var_0, var_1 )
+arena_endGame( winningTeam, endReasonText )
 {
-	thread maps\mp\gametypes\_gamelogic::endGame( var_0, var_1 );
+	thread maps\mp\gametypes\_gamelogic::endGame( winningTeam, endReasonText );
 }
 
-giveFlagCaptureXP( var_0 )
+giveFlagCaptureXP( touchList )
 {
 	level endon( "game_ended" );
 	wait 0.05;
 	maps\mp\_utility::WaitTillSlowProcessAllowed();
-	var_1 = getarraykeys( var_0 );
+	players = getarraykeys( touchList );
 
-	for ( var_2 = 0; var_2 < var_1.size; var_2++ )
+	for ( index = 0; index < players.size; index++ )
 	{
-		var_3 = var_0[var_1[var_2]].player;
-		var_3 thread [[ level.onXPEvent ]]( "capture" );
-		maps\mp\gametypes\_gamescore::givePlayerScore( "capture", var_3 );
-		var_3 thread maps\mp\_matchdata::logGameEvent( "capture", var_3.origin );
+		player = touchList[players[index]].player;
+		player thread [[ level.onXPEvent ]]( "capture" );
+		maps\mp\gametypes\_gamescore::givePlayerScore( "capture", player );
+		player thread maps\mp\_matchdata::logGameEvent( "capture", player.origin );
 	}
 }
 
 onUse( player )
 {
-	var_1 = player.pers["team"];
-	var_2 = maps\mp\gametypes\_gameobjects::getOwnerTeam();
-	var_3 = maps\mp\gametypes\_gameobjects::getLabel();
+	team = player.pers["team"];
+	oldTeam = maps\mp\gametypes\_gameobjects::getOwnerTeam();
+	label = maps\mp\gametypes\_gameobjects::getLabel();
 
 	player logString( "flag captured: " + self.label );
 
 	self.captureTime = gettime();
-	maps\mp\gametypes\_gameobjects::setOwnerTeam( var_1 );
+	maps\mp\gametypes\_gameobjects::setOwnerTeam( team );
 	maps\mp\gametypes\_gameobjects::set2DIcon( "enemy", "compass_waypoint_capture" );
 	maps\mp\gametypes\_gameobjects::set3DIcon( "enemy", "waypoint_capture" );
-	self.visuals[0] setmodel( game["flagmodels"][var_1] );
+	self.visuals[0] setmodel( game["flagmodels"][team] );
 
-	if ( var_2 == "neutral" )
+	if ( oldTeam == "neutral" )
 	{
-		var_4 = maps\mp\_utility::getOtherTeam( var_1 );
-		thread maps\mp\_utility::printAndSoundOnEveryone( var_1, var_4, &"MP_NEUTRAL_FLAG_CAPTURED_BY", &"MP_NEUTRAL_FLAG_CAPTURED_BY", "mp_war_objective_taken", undefined, player );
-		statusDialog( "secured_a", var_1 );
-		statusDialog( "enemy_has_a", var_4 );
+		otherTeam = maps\mp\_utility::getOtherTeam( team );
+		thread maps\mp\_utility::printAndSoundOnEveryone( team, otherTeam, &"MP_NEUTRAL_FLAG_CAPTURED_BY", &"MP_NEUTRAL_FLAG_CAPTURED_BY", "mp_war_objective_taken", undefined, player );
+		statusDialog( "secured_a", team );
+		statusDialog( "enemy_has_a", otherTeam );
 	}
 	else
-		thread maps\mp\_utility::printAndSoundOnEveryone( var_1, var_2, &"MP_ENEMY_FLAG_CAPTURED_BY", &"MP_FRIENDLY_FLAG_CAPTURED_BY", "mp_war_objective_taken", "mp_war_objective_lost", player );
+		thread maps\mp\_utility::printAndSoundOnEveryone( team, oldTeam, &"MP_ENEMY_FLAG_CAPTURED_BY", &"MP_FRIENDLY_FLAG_CAPTURED_BY", "mp_war_objective_taken", "mp_war_objective_lost", player );
 
-	thread giveFlagCaptureXP( self.touchList[var_1] );
+	thread giveFlagCaptureXP( self.touchList[team] );
 	player notify( "objective", "captured" );
-	thread flagCaptured( var_1, &"MP_DOM_NEUTRAL_FLAG_CAPTURED" );
+	thread flagCaptured( team, &"MP_DOM_NEUTRAL_FLAG_CAPTURED" );
 }
 
-onBeginUse( var_0 )
+onBeginUse( player )
 {
-	var_1 = maps\mp\gametypes\_gameobjects::getOwnerTeam();
+	ownerTeam = maps\mp\gametypes\_gameobjects::getOwnerTeam();
 	self.didStatusNotify = 0;
 
-	if ( var_1 == "neutral" )
+	if ( ownerTeam == "neutral" )
 	{
-		var_2 = maps\mp\_utility::getOtherTeam( var_0.pers["team"] );
-		statusDialog( "securing_a", var_0.pers["team"] );
-		self.objPoints[var_0.pers["team"]] thread maps\mp\gametypes\_objpoints::startFlashing();
-		statusDialog( "losing_a", var_2 );
+		otherTeam = maps\mp\_utility::getOtherTeam( player.pers["team"] );
+		statusDialog( "securing_a", player.pers["team"] );
+		self.objPoints[player.pers["team"]] thread maps\mp\gametypes\_objpoints::startFlashing();
+		statusDialog( "losing_a", otherTeam );
 		return;
 	}
 
@@ -400,18 +402,18 @@ onBeginUse( var_0 )
 	self.objPoints["axis"] thread maps\mp\gametypes\_objpoints::startFlashing();
 }
 
-onUseUpdate( var_0, var_1, var_2 )
+onUseUpdate( team, progress, change )
 {
-	if ( var_1 > 0.05 && var_2 && !self.didStatusNotify )
+	if ( progress > 0.05 && change && !self.didStatusNotify )
 	{
-		var_3 = maps\mp\_utility::getOtherTeam( var_0 );
-		statusDialog( "losing_a", var_3 );
-		statusDialog( "securing_a", var_0 );
+		otherTeam = maps\mp\_utility::getOtherTeam( team );
+		statusDialog( "losing_a", otherTeam );
+		statusDialog( "securing_a", team );
 		self.didStatusNotify = 1;
 	}
 }
 
-onEndUse( var_0, var_1, var_2 )
+onEndUse( team, player, success )
 {
 	self.objPoints["allies"] thread maps\mp\gametypes\_objpoints::stopFlashing();
 	self.objPoints["axis"] thread maps\mp\gametypes\_objpoints::stopFlashing();
@@ -434,7 +436,7 @@ delayedLeaderDialog( sound, team )
 	maps\mp\_utility::leaderDialog( sound, team );
 }
 
-flagCaptured( var_0, var_1 )
+flagCaptured( winningTeam, endReasonText )
 {
-	maps\mp\gametypes\_gamelogic::endGame( var_0, var_1 );
+	maps\mp\gametypes\_gamelogic::endGame( winningTeam, endReasonText );
 }
