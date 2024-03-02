@@ -1,15 +1,22 @@
-# PlutoIW5Arena
+# PlutoIW5Arena: A mod for Plutonium.pw
 
-Build a mod.ff archive using ZoneTool.
-Place the ff archive in `%localappdata%/Plutonium/storage/iw5/mods/arena`.
-Set `fs_game` Dvar to `mods/arena`
+## Build
 
-# Warning
+- Build a mod.ff archive using [OpenAssetTools][oat-link].
+- Place the mod.ff archive in `%localappdata%/Plutonium/storage/iw5/mods/arena`.
+- Set `fs_game` Dvar to `mods/arena`
 
-You may need to place rawfiles inside an iwd to get plutonium to load them.
+## Bonus
 
-# Bonus
 GTNW has been added. Thanks to:
-* [callanb](https://github.com/callanb)
 
-* [ZoneTool](https://github.com/ZoneTool/zonetool)
+* [callanb](callanb-link)
+
+* [ZoneTool](zonetool-link)
+
+* [Laupetin][laupetin-link]
+
+[oat-link]:          https://openassettools.dev
+[callanb-link]:      https://github.com/callanb
+[zonetool-link]:     https://github.com/ZoneTool/zonetool
+[laupetin-link]:     https://github.com/Laupetin

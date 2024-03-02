@@ -1,0 +1,23 @@
+VERSION             "1"
+CONFIG              "C:/trees/cod3/cod3/bin/StringEd.cfg"
+FILENOTES           "Arena mod"
+
+REFERENCE           MPUI_GTNW
+LANG_ENGLISH        "Global Thermonuclear War"
+
+REFERENCE           MPUI_GTNW_RECIPE_DESC
+LANG_ENGLISH        "Global thermonuclear war."
+
+REFERENCE           MPUI_GTNW_RECIPE_NAME
+LANG_ENGLISH        "Global Thermonuclear War"
+
+REFERENCE           OBJECTIVES_GTNW
+LANG_ENGLISH        "Be the first to capture the Nuclear Strike crate to win."
+
+REFERENCE           PRESENCE_ARENA
+LANG_ENGLISH        "Arena"
+
+REFERENCE           PRESENCE_GTNW
+LANG_ENGLISH        "GTNW"
+
+ENDMARKER
