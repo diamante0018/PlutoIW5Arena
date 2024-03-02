@@ -10,9 +10,9 @@
 
 GTNW has been added. Thanks to:
 
-* [callanb](callanb-link)
+* [callanb][callanb-link]
 
-* [ZoneTool](zonetool-link)
+* [ZoneTool][zonetool-link]
 
 * [Laupetin][laupetin-link]
 
