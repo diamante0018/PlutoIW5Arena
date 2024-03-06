@@ -19,6 +19,7 @@ jobs:
       - name: Link assets
         run: |
           Linker -v arena
+
       - name: Upload mod.ff
         uses: actions/upload-artifact@main
         with:
