@@ -14,7 +14,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          ddpkg --add-architecture i386
+          dpkg --add-architecture i386
           apt-get update
           apt-get -y install libstdc++-13-dev:i386
 
