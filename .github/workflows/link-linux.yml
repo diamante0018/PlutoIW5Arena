@@ -5,7 +5,7 @@ on: [push]
 jobs:
   link-linux:
     name: Link assets on Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Check out files
@@ -14,7 +14,7 @@ jobs:
       - name: Setup OAT
         uses: diamante0018/setup-oat@main
         with:
-          version: "0.8.3"
+          version: "0.14.1"
 
       - name: Link assets
         run: |
