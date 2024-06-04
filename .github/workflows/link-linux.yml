@@ -6,15 +6,22 @@ jobs:
   link-linux:
     name: Link assets on Linux
     runs-on: ubuntu-latest
+    container: ubuntu:24.04
 
     steps:
       - name: Check out files
         uses: actions/checkout@main
 
+      - name: Install dependencies
+        run: |
+          dpkg --add-architecture i386
+          apt-get update
+          apt-get -y install libstdc++-13-dev:i386
+
       - name: Setup OAT
         uses: diamante0018/setup-oat@main
         with:
-          version: "0.8.3"
+          version: "0.14.1"
 
       - name: Link assets
         run: |
