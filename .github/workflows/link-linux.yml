@@ -5,7 +5,8 @@ on: [push]
 jobs:
   link-linux:
     name: Link assets on Linux
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
 
     steps:
       - name: Check out files
