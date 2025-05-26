@@ -3,7 +3,7 @@ name: link
 on: [push]
 
 env:
-  OAT_VERSION: "0.21.0"
+  OAT_VERSION: "0.21.1"
 
 jobs:
   link-linux:
